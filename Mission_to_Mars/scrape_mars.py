@@ -178,8 +178,7 @@ print(hemisphere_image_urls)
 # In[103]:
 
 
-browser.quit()
-
+#browser.quit()
 
 # In[ ]:
 
