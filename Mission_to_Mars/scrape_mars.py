@@ -3,6 +3,10 @@ from splinter import Browser, browser
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup as bs
 import pandas as pd
+import time
+import os
+
+
 
 
 
@@ -14,40 +18,46 @@ def init_browser():
 def scrape():
     browser = init_browser()
 
-    nasa_mars_url = "https://mars.nasa.gov/news/"
-    browser.visit(nasa_mars_url)
+    nasa_url = "https://mars.nasa.gov/news/"
+    browser.visit(nasa_url)
     
+    time.sleep(1)
 
+    # Scrape page into Soup
     html = browser.html
-    marssoup = bs(html, 'lxml')
+    soup = bs(html, 'lxml')
 
-    mars_results = marssoup.find('li', class_='slide')
+    mars_results = soup.find('li', class_='slide')
 
     article_title = mars_results.find('div', class_='content_title').text
     article_body = mars_results.find('div', class_='article_teaser_body').text
 
 
 
-    #######################################################################
 
     
-    image_url = 'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html'
-    browser.visit(image_url)
+    url = "https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html"
+    browser.visit(url)
+    html = browser.html
+   
+    soup = bs(html, 'html.parser')
+    image = soup.find_all('div', class_='header')[0]
 
-    featured_image_url = browser.find_by_xpath('/html/body/div[1]/img')['src']
+    featured_image = image.find('img', class_='headerimage fade-in')
+    featured_image = featured_image.attrs.get('src', None)
 
-    #######################################################################    
-    
-    
+    url = os.path.dirname(url)
+
+    featured_image_url = f'{url}/{featured_image}'    
+
+
+
+
     mars_data_url = 'https://space-facts.com/mars/'
     tables = pd.read_html(mars_data_url)
     mars_df = tables[0]
 
     mars_data = mars_df.to_html(index = False, header = False)
-
-
-
-    #######################################################################
 
     
     hemisphere_url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
@@ -83,14 +93,17 @@ def scrape():
 
         hemisphere_data.append(hemisphere_info)
 
-    
-    mars_data = {
+
+
+
+    mars_dict = {
         "article_title": article_title,
         "article_body": article_body,
         "featured_image": featured_image_url,
         "mars_facts": mars_data,
-        "hemisphere_data": hemisphere_data}
+        "hemisphere_data": hemisphere_data
+        }
 
     browser.quit()
 
-    return mars_data
+    return mars_dict
