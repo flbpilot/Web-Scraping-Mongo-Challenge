@@ -33,8 +33,6 @@ def scrape():
     article_body = mars_results.find('div', class_='article_teaser_body').text
 
 
-
-
     
     url = "https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html"
     browser.visit(url)
